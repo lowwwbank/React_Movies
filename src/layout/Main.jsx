@@ -22,7 +22,7 @@ class Main extends React.Component {
 
     makeSearch = (title, category) => {
         if (!category) category = ''
-        let link = `http://www.omdbapi.com/?apikey=${API_KEY}&s=${title}&type=${category}`
+        let link = `https://www.omdbapi.com/?apikey=${API_KEY}&s=${title}&type=${category}`
         return fetch(link)
             .then(response => {
                 return response.json();
