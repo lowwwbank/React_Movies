@@ -1,57 +1,52 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import Movies from "../components/Movies";
 import Preloader from "../components/Preloader";
 import Search from "../components/Search";
 
 const API_KEY = process.env.REACT_APP_API_KEY
 
-class Main extends React.Component {
+function Main() {
 
-    state = {
-        films: null,
-        loading: true
-    };
+    const [films, setFilms] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-    updateSearch = (searchTerm,category) => {
-        this.setState({ loading: true, films: null }); 
-        this.makeSearch(searchTerm,category)
+    const updateSearch = (searchTerm,category) => {
+        setLoading(true)
+        setFilms(null)
+        makeSearch(searchTerm,category)
             .then(data => {
-                this.setState({ films: data, loading: false });
+                setFilms(data)
+                setLoading(false)
             });
     };
 
-    makeSearch = (title, category) => {
-        if (!category) category = ''
-        let link = `https://www.omdbapi.com/?apikey=${API_KEY}&s=${title}&type=${category}`
-        return fetch(link)
-            .then(response => {
-                return response.json();
+    const makeSearch = async (title, category='') => {
+        const link = `https://www.omdbapi.com/?apikey=${API_KEY}&s=${title}&type=${category}`
+        const response = await fetch(link)
+        const data = await response.json()
+        return data['Search'] || []
+
+    };
+
+    useEffect(() => {
+        setLoading(true)
+        makeSearch('batman')
+            .then(data => {
+                setFilms(data)
+                setLoading(false)
             })
-            .then(data => {
-                return data['Search'] || [];
-            });
-    };
 
-    componentDidMount() {
-        this.setState({ loading: true });
-        this.makeSearch('batman')
-            .then(data => {
-                this.setState({ films: data, loading: false });
-            });
-    }
+    },[])
 
-    render() {
-        const { films, loading } = this.state;
 
-        return (
-            <main className="content container">
-                <Search search={this.updateSearch} /> 
-                {
-                    loading ? <Preloader /> : (films.length ? <Movies movies={films} /> : <h4>Ничего не найдено.</h4>)
-                }
-            </main>
-        );
-    }
+    return (
+        <main className="content container">
+            <Search find={updateSearch} /> 
+            {
+                loading ? <Preloader /> : (films.length ? <Movies movies={films} /> : <h4>Ничего не найдено.</h4>)
+            }
+        </main>
+    );
 }
 
 export default Main;
